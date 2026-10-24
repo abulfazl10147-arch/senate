@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src https://generativelanguage.googleapis.com https://api.anthropic.com https://api.openai.com https://openrouter.ai; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Senate</title>
+<meta name="description" content="Senate: a council of artificial intelligences. Pick advisors, give each a point of view, and watch them debate your decision.">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('council.theme')||(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark')}catch(e){document.documentElement.dataset.theme='dark'}</script>
+<style>
+:root{color-scheme:dark;--bg:#2b1215;--fg:#f6e9e2;--muted:#b69a95;--line:#4a2327;--card:#351a1d;--navon:#4a2327;--body:#d9774f;--acc:#f6e9e2;--eye:#2b1215;--btn:#f6c9b0;--btnfg:#2b1215;--orb:240,184,160;--pulse:233,138,95;--glow:rgba(240,184,160,.10)}
+:root[data-theme=light]{color-scheme:light;--bg:#f7ebe4;--fg:#3a1519;--muted:#8a6a66;--line:#e8cfc6;--card:#fff7f2;--navon:#efd9cf;--acc:#3a1519;--eye:#3a1519;--btn:#7a1f27;--btnfg:#fbeee6;--orb:156,47,53;--glow:rgba(156,47,53,.09)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--fg);font:16px/1.55 ui-rounded,"SF Pro Rounded","Hiragino Maru Gothic ProN",Quicksand,Nunito,system-ui,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 24px;height:68px;flex:none}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px}
+.brand i{width:11px;height:11px;border-radius:4px;background:var(--body)}
+nav{display:flex;gap:20px}
+nav button{background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);font:inherit;font-size:15px;padding:4px 0;cursor:pointer}
+nav button:hover{color:var(--fg)}
+nav button[aria-current=page]{color:var(--fg);border-bottom-color:var(--body)}
+button:focus-visible,summary:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--btn);outline-offset:2px}
+main{flex:1;min-height:0;position:relative;overflow:auto}
+.page[hidden]{display:none}
+footer{flex:none;text-align:center;font-size:12px;color:var(--muted);padding:8px 12px}
+#home{position:absolute;inset:0;overflow:hidden}
+#orb{position:absolute;inset:0;width:100%;height:100%;display:block}
+.m{position:absolute;transform:translate(-50%,-50%)}
+.m svg{display:block;width:100%;height:100%;}
+.btn{background:var(--btn);color:var(--btnfg);border:0;border-radius:8px;padding:12px 26px;font:inherit;font-weight:700;cursor:pointer}
+.btn:hover{filter:brightness(1.07)}
+.start{position:absolute;left:50%;bottom:5%;transform:translateX(-50%);font-size:17px;padding:14px 34px;white-space:nowrap}
+.doc{max-width:640px;margin:0 auto;padding:32px 20px 48px}
+.doc h1{font-size:28px;line-height:1.2;margin:0 0 16px}
+.doc h2{font-size:18px;margin:28px 0 8px}
+.doc p,.doc li{max-width:70ch}
+.doc li{margin:6px 0}
+.muted,.note{color:var(--muted)}
+.note{font-size:14px;margin:0 0 16px}
+#advList{border-top:1px solid var(--line)}
+details.adv{border-bottom:1px solid var(--line)}
+details.adv summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:16px 0;font-weight:600}
+details.adv summary::-webkit-details-marker{display:none}
+details.adv summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s}
+details.adv[open] summary::after{transform:rotate(-135deg)}
+details.adv>:not(summary){margin:0 0 16px}
+.f{display:block}
+.f span{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+input,textarea{width:100%;font:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--fg)}
+textarea{resize:vertical}
+.row{display:flex;gap:8px;align-items:center}
+.ghost{background:none;border:0;color:var(--muted);cursor:pointer;font:inherit;font-size:14px;padding:6px 8px;border-radius:8px}
+.ghost:hover{color:var(--fg)}
+.danger:hover{color:#c0392b}
+.actions{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.right{display:flex;align-items:center;gap:20px}
+.icon{width:32px;height:32px;background:none;border:0;color:var(--muted);cursor:pointer;display:grid;place-items:center;padding:0}
+.icon:hover{color:var(--fg)}
+:root[data-theme=dark] .i-moon,:root[data-theme=light] .i-sun{display:none}
+select{width:100%;font:inherit;font-size:15px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--fg)}
+input[type=checkbox]{width:auto;accent-color:var(--body)}
+.pick{display:flex;gap:10px;align-items:center;padding:6px 0}
+#log{margin:8px 0 16px}
+.msg{border-left:3px solid var(--c);padding:2px 0 2px 14px;margin:18px 0}
+.msg .who{display:flex;align-items:center;gap:8px}
+.msg p{margin:6px 0 0;white-space:pre-wrap;max-width:70ch}
+.msg.you{--c:var(--muted)}
+.msg.summary{--c:var(--fg)}
+[hidden]{display:none!important}
+#povList{border-top:1px solid var(--line)}
+.f select{margin-bottom:8px}
+.rolebox{position:relative}
+.rolebox textarea{padding-top:42px;display:block}
+.chip{position:absolute;top:7px;right:7px;background:var(--card);border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer}
+.chip:hover{border-color:var(--muted)}
+.menu{position:absolute;top:40px;right:7px;z-index:5;min-width:180px;max-height:220px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:4px}
+.menu .item{display:block;width:100%;text-align:left;background:none;border:0;color:var(--fg);font:inherit;font-size:14px;padding:8px 10px;border-radius:6px;cursor:pointer}
+.menu .item:hover{background:var(--line)}
+.menu .note{margin:6px 8px}
+.save{display:block;margin-top:10px;padding-left:0}
+#stage{position:relative;height:150px;margin-bottom:8px}
+#sc{position:absolute;inset:0;width:100%;height:100%;display:block}
+.sm{position:absolute;width:34px;height:34px;transform:translate(-50%,-50%);transition:transform .25s,opacity .25s,filter .25s}
+.sm svg{display:block;width:100%;height:100%}
+.sm.on{transform:translate(-50%,-50%) scale(1.3);filter:drop-shadow(0 0 6px var(--body))}
+.sm.dim{opacity:.5}
+.thumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.thumb{display:flex;flex-direction:column;align-items:flex-start}
+.thumbs img{height:72px;border-radius:6px;border:1px solid var(--line);display:block}
+.hist{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.hist>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist div{flex:none}
+.msg.votes,.msg.joint{--c:var(--body)}
+@media (max-width:560px){
+  header{padding:0 14px}
+  .brand{font-size:16px}
+  nav{gap:12px}
+  nav button{font-size:14px}
+  .right{gap:8px}
+  .doc{padding:24px 16px 40px}
+  .start{bottom:4%;padding:12px 28px}
+  #stage{height:130px}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<g id="base"><rect x="11" y="20" width="42" height="26" rx="2" fill="var(--body)"/><rect x="5" y="30" width="6" height="8" fill="var(--body)"/><rect x="53" y="30" width="6" height="8" fill="var(--body)"/><rect x="15" y="46" width="5" height="9" fill="var(--body)"/><rect x="24" y="46" width="5" height="9" fill="var(--body)"/><rect x="35" y="46" width="5" height="9" fill="var(--body)"/><rect x="44" y="46" width="5" height="9" fill="var(--body)"/><rect x="21" y="26" width="5" height="9" fill="var(--eye)"/><rect x="38" y="26" width="5" height="9" fill="var(--eye)"/></g>
+<g id="m0"><use href="#base"/><path d="M32 37l-3 3 3 8 3-8z" fill="var(--acc)"/><rect x="52" y="40" width="11" height="8" rx="1.5" fill="var(--acc)"/><path d="M55 40v-2h5v2" stroke="var(--acc)" stroke-width="1.5" fill="none"/></g>
+<g id="m1"><use href="#base"/><rect x="13" y="13" width="30" height="7" rx="3.5" fill="var(--acc)"/><rect x="27" y="9" width="4" height="4" fill="var(--acc)"/><path d="M59 38l3-13" stroke="var(--acc)" stroke-width="2.2" stroke-linecap="round"/></g>
+<g id="m2"><use href="#base"/><g fill="none" stroke="var(--acc)" stroke-width="1.8"><rect x="17" y="23.5" width="13" height="14"/><rect x="34" y="23.5" width="13" height="14"/><path d="M30 30h4"/></g><path d="M57 41h4v4l3 7H54l3-7z" fill="var(--acc)"/></g>
+<g id="m3"><use href="#base"/><path d="M15 20v-3a17 11 0 0 1 34 0v3z" fill="var(--acc)"/><rect x="11" y="19" width="42" height="3.5" rx="1.5" fill="var(--acc)"/><path d="M59 38l3-11" stroke="var(--acc)" stroke-width="2" stroke-linecap="round"/><rect x="57" y="22" width="9" height="5" rx="1.2" fill="var(--acc)" transform="rotate(-20 61 24)"/></g>
+<g id="m4"><use href="#base"/><rect x="51" y="40" width="12" height="9" rx="1.5" fill="none" stroke="var(--acc)" stroke-width="1.8"/><path d="M57 40v9" stroke="var(--acc)" stroke-width="1.5"/><path d="M46 19l6-9" stroke="var(--acc)" stroke-width="2.2" stroke-linecap="round"/></g>
+</defs></svg>
+
+<header>
+  <div class="brand"><i></i>Senate</div>
+  <div class="right">
+    <nav aria-label="Main">
+      <button data-go="home">Home</button>
+      <button data-go="settings">Settings</button>
+      <button data-go="about">About</button>
+    </nav>
+    <button id="theme" class="icon" type="button" aria-label="Switch to light theme">
+      <svg class="i-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="i-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section id="home" class="page">
+    <canvas id="orb" aria-hidden="true"></canvas>
+    <div class="m" style="--d:0s" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#m0"/></svg></div>
+    <div class="m" style="--d:-.8s" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#m1"/></svg></div>
+    <div class="m" style="--d:-1.7s" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#m2"/></svg></div>
+    <div class="m" style="--d:-2.5s" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#m3"/></svg></div>
+    <div class="m" style="--d:-3.3s" aria-hidden="true"><svg viewBox="0 0 64 64"><use href="#m4"/></svg></div>
+    <button class="btn start" data-go="debate">Start a debate</button>
+  </section>
+
+  <section id="settings" class="page doc" hidden>
+    <h1>Settings</h1>
+    <h2>Ground rules</h2>
+    <p class="note">Applies to every advisor in every debate. Use it to set how they argue and when to wrap up.</p>
+    <textarea id="rules" rows="5"></textarea>
+    <div class="actions"><button id="rulesReset" class="ghost" type="button">Reset to default</button></div>
+    <h2>Saved POVs</h2>
+    <p class="note">Write a point of view once, then load it into any advisor from its Role section. Loading copies the text, so you can still tweak it per advisor.</p>
+    <div id="povList"></div>
+    <p id="povEmpty" class="muted">No saved POVs yet.</p>
+    <div class="actions"><button id="addPov" class="btn" type="button">Add POV</button><button id="starter" class="ghost" type="button">Add starter pack</button></div>
+    <h2>Advisors</h2>
+    <p class="note">Everything is stored only in this browser. Don’t use this on a shared computer.</p>
+    <div id="advList"></div>
+    <p id="empty" class="muted">No advisors yet.</p>
+    <div class="actions">
+      <button id="add" class="btn" type="button">Add advisor</button>
+      <button id="clear" class="ghost danger" type="button">Clear all data</button>
+    </div>
+  </section>
+
+  <section id="about" class="page doc" hidden>
+    <h1>About</h1>
+    <p>Senate is a council of artificial intelligences. Several advisors argue a topic from different points of view, so you can see the trade-offs before you decide.</p>
+    <h2>How to use it</h2>
+    <ol>
+      <li>Get an API key from the AI provider you use (Google, OpenAI, Anthropic, or OpenRouter).</li>
+      <li>In Settings, add an advisor: a name, your key, and a role. The role is the point of view they argue from, so make it specific.</li>
+      <li>Add at least two advisors who disagree. You can save roles as POVs and reuse them.</li>
+      <li>Optionally, write ground rules that apply to every advisor.</li>
+      <li>On the home page, press Start a debate. Enter a topic, add images if you like, and pick your advisors.</li>
+    </ol>
+    <h2>During a debate</h2>
+    <p>Advisors take turns in rounds. After each round you can reply to steer them, or just continue. You can pause, stop, ask for a joint answer from all the advisors, and export the debate as a Markdown file. At the end, advisors can give final votes, and a neutral summary is written. Finished debates are saved in this browser.</p>
+    <h2>Privacy</h2>
+    <ul>
+      <li>Senate has no server, no accounts, and no analytics.</li>
+      <li>Your keys, advisors, POVs, and saved debates are stored only in this browser. “Clear all data” in Settings erases them.</li>
+      <li>When a debate runs, your topic, images, and conversation are sent directly from your browser to the AI provider you chose for each advisor, under that provider’s terms. Free API tiers may use your content to improve their products, so keep sensitive personal details out of your topics.</li>
+      <li>The site is hosted by a third party that may keep standard access logs (such as IP address and browser type) when the page loads. Senate itself does not collect or see them.</li>
+      <li>Set a spending limit on your API keys, and revoke a key if you ever used it on a shared computer.</li>
+    </ul>
+    <h2>Good to know</h2>
+    <p>AI advisors can be wrong or one-sided, and their output is not professional, legal, medical, or financial advice. You are responsible for any costs on your own API keys.</p>
+    <h2>Affiliation</h2>
+    <p>Senate is an independent project and is not affiliated with Anthropic, Google, OpenAI, or OpenRouter.</p>
+    <p class="muted">Version 1.0</p>
+  </section>
+
+  <section id="debate" class="page doc" hidden>
+    <div id="setup">
+      <h1>New debate</h1>
+      <label class="f"><span>Topic or decision</span><textarea id="topic" rows="3" placeholder="What are you trying to decide?"></textarea></label>
+      <div class="f" style="margin-top:12px"><span>Images (optional, up to 3)</span><input id="imgIn" type="file" accept="image/*" multiple><div id="thumbs" class="thumbs"></div></div>
+      <div class="f" style="margin-top:16px"><span>Advisors</span><div id="pick"></div></div>
+      <label class="f" style="margin-top:16px"><span>Rounds</span><select id="rounds"><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+      <label class="pick" style="margin-top:12px"><input type="checkbox" id="stepRounds" checked><span>Pause after each round so I can reply</span></label>
+      <label class="pick"><input type="checkbox" id="voteOn" checked><span>Ask each advisor for a final vote</span></label>
+      <p id="pickMsg" class="note" style="margin-top:12px"></p>
+      <div class="actions"><button id="go" class="btn" type="button">Begin</button><button class="ghost" data-go="settings" type="button">Edit advisors</button></div>
+      <h2 id="pastH" hidden>Past debates</h2>
+      <div id="past"></div>
+    </div>
+    <div id="room" hidden>
+      <div id="stage" aria-hidden="true"><canvas id="sc"></canvas></div>
+      <p class="note" id="roomTopic"></p>
+      <div id="roomImgs" class="thumbs"></div>
+      <div id="log" aria-live="polite"></div>
+      <p id="status" class="note" role="status"></p>
+      <div id="live">
+        <div class="row"><input id="sayIn" type="text" placeholder="Jump in with your own message" autocomplete="off"><button id="sayBtn" class="btn" type="button">Send</button></div>
+        <div class="actions"><button id="pause" class="ghost" type="button">Pause</button><button id="stop" class="ghost danger" type="button">Stop</button><button id="joint" class="ghost" type="button">Joint answer</button></div>
+      </div>
+      <div class="actions"><button id="exp" class="ghost" type="button">Export</button><button id="again" class="ghost" type="button">New debate</button></div>
+    </div>
+  </section>
+</main>
+
+<footer>Unofficial. Not affiliated with Anthropic, Google, OpenAI, or OpenRouter.</footer>
+
+<script>
+const $=s=>document.querySelector(s);
+const pages={home:$('#home'),settings:$('#settings'),about:$('#about'),debate:$('#debate')};
+let current='home';
+
+function show(p){
+  current=p;
+  for(const k in pages)pages[k].hidden=k!==p;
+  document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-current',b.dataset.go===p?'page':'false'));
+  if(p==='home'){layout();start()}else stop();
+  if(p==='debate')enterDebate();else cancelAnimationFrame(sraf);
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b)show(b.dataset.go)});
+
+/* ---------- Hero: orb + mascots ---------- */
+const cv=$('#orb'),ctx=cv.getContext('2d');
+const ms=[...document.querySelectorAll('.m')];
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MAX=1400,PX=new Float32Array(MAX),PY=new Float32Array(MAX),PZ=new Float32Array(MAX),OX=new Float32Array(MAX),OY=new Float32Array(MAX);
+for(let i=0;i<MAX;i++){const y=1-2*(i+.5)/MAX,r=Math.sqrt(1-y*y),a=i*2.399963;PX[i]=Math.cos(a)*r;PY[i]=y;PZ[i]=Math.sin(a)*r}
+let W=0,H=0,cx=0,cy=0,R=0,S=0,N=MAX,pos=[],yaw=0,yo=0,po=0,ty=0,tp=0,mx=-9999,my=-9999,raf=0;
+const angles=[-90,-18,54,126,198];
+let ORB='240,184,160',PULSE='233,138,95';
+function colors(){const c=getComputedStyle(document.documentElement);ORB=c.getPropertyValue('--orb').trim()||ORB;PULSE=c.getPropertyValue('--pulse').trim()||PULSE}
+
+function layout(){
+  colors();
+  const r=pages.home.getBoundingClientRect();W=r.width;H=r.height;
+  if(!W||!H)return;
+  const dpr=Math.min(devicePixelRatio||1,2);
+  cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+  S=Math.max(46,Math.min(72,Math.min(W,H)*.11));
+  R=Math.max(56,Math.min(W*.19,H*.2));
+  cx=W/2;cy=H*.46;
+  N=W<600?900:MAX;
+  const rx=Math.min(W/2-S*.7,R*2.8);
+  let ry=Math.min(R*2.1,cy-S/2-6,(H-64-S/2-cy)/.81);
+  ry=Math.max(R+S*.6,ry);
+  pos=angles.map(a=>{const t=a*Math.PI/180;return{x:cx+rx*Math.cos(t),y:cy+ry*Math.sin(t)}});
+  ms.forEach((m,i)=>{m.style.left=pos[i].x+'px';m.style.top=pos[i].y+'px';m.style.width=m.style.height=S+'px'});
+  if(reduce)draw(0);
+}
+
+function draw(t){
+  ctx.clearRect(0,0,W,H);
+  ctx.globalAlpha=1;
+  ctx.lineWidth=1;
+  pos.forEach((p,i)=>{
+    const dx=cx-p.x,dy=cy-p.y,d=Math.hypot(dx,dy)||1,ux=dx/d,uy=dy/d;
+    const x0=p.x+ux*S*.62,y0=p.y+uy*S*.62,x1=cx-ux*R*1.02,y1=cy-uy*R*1.02;
+    ctx.strokeStyle=`rgba(${ORB},.4)`;
+    ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+    if(!reduce){
+      const k=(t/3200+i*.21)%1;
+      ctx.fillStyle=`rgb(${PULSE})`;
+      ctx.globalAlpha=Math.sin(Math.PI*k);
+      ctx.beginPath();ctx.arc(x0+(x1-x0)*k,y0+(y1-y0)*k,2.4,0,6.2832);ctx.fill();
+      ctx.globalAlpha=1;
+    }
+  });
+  const cY=Math.cos(yaw+yo),sY=Math.sin(yaw+yo),cP=Math.cos(po),sP=Math.sin(po);
+  ctx.fillStyle=`rgb(${ORB})`;
+  for(let i=0;i<N;i++){
+    const x=PX[i],y=PY[i],z=PZ[i];
+    const x1=x*cY+z*sY,z1=-x*sY+z*cY;
+    const y2=y*cP-z1*sP,z2=y*sP+z1*cP;
+    const k=1+z2*.15;
+    let sx=cx+x1*R*k,sy=cy+y2*R*k;
+    let glow=0;
+    if(!reduce){
+      const dx=sx-mx,dy=sy-my,d=Math.hypot(dx,dy);
+      let tx=0,tyy=0;
+      if(d<140){const q=1-d/140;glow=q;const f=q*q*.55;tx=-dx*f;tyy=-dy*f}
+      OX[i]+=(tx-OX[i])*.12;OY[i]+=(tyy-OY[i])*.12;
+      sx+=OX[i];sy+=OY[i];
+    }
+    const depth=(z2+1)/2;
+    ctx.globalAlpha=Math.min(1,.18+.82*depth+glow*.5);
+    ctx.beginPath();ctx.arc(sx,sy,.7+1.3*depth+glow*1.6,0,6.2832);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+}
+
+function frame(t){
+  yaw+=.0018;yo+=(ty-yo)*.05;po+=(tp-po)*.05;
+  draw(t);
+  raf=requestAnimationFrame(frame);
+}
+function start(){cancelAnimationFrame(raf);if(reduce)draw(0);else raf=requestAnimationFrame(frame)}
+function stop(){cancelAnimationFrame(raf)}
+
+window.addEventListener('pointermove',e=>{
+  if(current!=='home'||reduce)return;
+  const r=cv.getBoundingClientRect();
+  mx=e.clientX-r.left;my=e.clientY-r.top;
+});
+window.addEventListener('pointerup',e=>{if(e.pointerType!=='mouse')mx=my=-9999});
+document.documentElement.addEventListener('pointerleave',()=>{mx=my=-9999});
+window.addEventListener('resize',()=>{if(current==='home'){layout();if(!reduce)start()}});
+
+/* ---------- Settings: advisors (form only, no API logic yet) ---------- */
+const STORE='council.advisors.v1';
+let adv=[];
+try{adv=JSON.parse(localStorage.getItem(STORE))||[]}catch(e){}
+if(!Array.isArray(adv))adv=[];
+const save=()=>{try{localStorage.setItem(STORE,JSON.stringify(adv))}catch(e){}};
+const list=$('#advList');
+
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+function field(label,child){const l=el('label','f');l.append(el('span','',label),child);return l}
+
+function render(openId){
+  povSelects=[];
+  list.replaceChildren();
+  $('#empty').hidden=adv.length>0;
+  adv.forEach((a,i)=>{
+    const d=el('details','adv');
+    d.open=openId!==undefined&&a.id===openId;
+    const s=el('summary','',a.name||'New advisor');
+    const name=el('input');name.type='text';name.placeholder='Name';name.autocomplete='off';name.value=a.name||'';
+    name.oninput=()=>{a.name=name.value;s.textContent=a.name||'New advisor';save()};
+    const key=el('input');key.type='password';key.placeholder='Paste your API key';key.autocomplete='off';key.spellcheck=false;key.value=a.key||'';
+    key.oninput=()=>{a.key=key.value;save();refresh()};
+    const eye=el('button','ghost','Show');eye.type='button';
+    eye.onclick=()=>{const hidden=key.type==='password';key.type=hidden?'text':'password';eye.textContent=hidden?'Hide':'Show'};
+    const row=el('div','row');row.append(key,eye);
+    const role=el('textarea');role.rows=4;role.value=a.role||'';
+    role.placeholder='The point of view they argue from, e.g. “You push for the cheapest option and challenge anything expensive.”';
+    role.oninput=()=>{a.role=role.value;save()};
+    const addPov=el('button','chip','+ Add POV');addPov.type='button';
+    const picker=el('div','menu');picker.hidden=true;
+    addPov.onclick=()=>{
+      if(!picker.hidden){picker.hidden=true;return}
+      picker.replaceChildren();
+      if(!povs.length)picker.append(el('p','note','No saved POVs yet. Add some in the Saved POVs section above.'));
+      povs.forEach(v=>{
+        const b=el('button','item',v.name||'Untitled');b.type='button';
+        b.onclick=()=>{role.value=v.text||'';a.role=role.value;save();picker.hidden=true};
+        picker.append(b);
+      });
+      picker.hidden=false;
+    };
+    const savePov=el('button','ghost save','Save this role as a POV');savePov.type='button';
+    savePov.onclick=()=>{if(!role.value.trim())return;povs.push({id:Date.now().toString(36),name:a.name||'Untitled',text:role.value});savePovs();renderPovs();povSelects.forEach(x=>fillPovSelect(x));savePov.textContent='Saved'};
+    const box=el('div','rolebox');box.append(role,addPov,picker);
+    const roleWrap=el('div','');roleWrap.append(box,savePov);
+    const del=el('button','ghost danger','Remove advisor');del.type='button';
+    del.onclick=()=>{if(!confirm('Remove '+(a.name||'this advisor')+' and its API key?'))return;adv.splice(i,1);save();render()};
+    const prov=el('p','note','');
+    const psel=el('select');
+    [['','Choose provider…'],['google','Google'],['anthropic','Anthropic'],['openai','OpenAI'],['openrouter','OpenRouter']].forEach(([v,t])=>{const o=el('option','',t);o.value=v;psel.append(o)});
+    psel.value=a.provider||'';
+    const pf=field('Provider',psel);
+    psel.onchange=()=>{a.provider=psel.value;save();refresh()};
+    const model=el('input');model.type='text';model.autocomplete='off';model.value=a.model||'';
+    model.oninput=()=>{a.model=model.value;save()};
+    function refresh(){const auto=detect(a.key),pv=auto||a.provider;prov.textContent=a.key?(auto?PROV[auto].label+' key detected.':(pv?PROV[pv].label+' selected.':'Key format not recognized. Choose the provider below.')):'';pf.hidden=!(a.key&&!auto);model.placeholder=pv?'Default: '+PROV[pv].model:'Default model'}
+    const test=el('button','ghost','Test key');test.type='button';
+    const res=el('span','note','');
+    test.onclick=async()=>{res.textContent='Testing…';try{await ask(a,'You are a connectivity test.','Reply with the single word OK.');res.textContent='Works.'}catch(e){res.textContent=e.message}};
+    const trow=el('div','row');trow.append(test,res);
+    const modelNote=el('p','note','If you see a “model not found” error, the default may be out of date. Enter a current model name from your provider’s docs.');
+    refresh();
+    d.append(s,field('Name',name),field('API key',row),prov,pf,field('Model (optional)',model),modelNote,trow,field('Role',roleWrap),del);
+    list.append(d);
+  });
+}
+document.addEventListener('click',e=>{document.querySelectorAll('.menu').forEach(m=>{if(!m.hidden&&!m.contains(e.target)&&!e.target.closest('.chip'))m.hidden=true})});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.menu').forEach(m=>{m.hidden=true})});
+const POV_KEY='council.povs.v1';
+let povs=[],povFresh=true;
+try{const raw=localStorage.getItem(POV_KEY);if(raw!==null){povFresh=false;povs=JSON.parse(raw)||[]}}catch(e){}
+if(!Array.isArray(povs))povs=[];
+const savePovs=()=>{try{localStorage.setItem(POV_KEY,JSON.stringify(povs))}catch(e){}};
+const STARTER=[
+ ['Devil’s Advocate','You challenge whatever the group seems to agree on. Find the weakest assumption in the leading idea and attack it with specifics.'],
+ ['Pragmatist','You care about what is realistic: time, cost and effort. You push back on anything that sounds good but is hard to actually do.'],
+ ['Risk Spotter','You look for what could go wrong: failure modes, hidden costs and things that are hard to undo. You ask what happens in the worst case.'],
+ ['Big-Picture Optimist','You focus on the upside and long-term potential. You argue for ambitious options and explain why the risks are worth taking.'],
+ ['The Customer','You speak as the end user. You judge everything by whether it is clear, useful and worth the price to someone who does not know the details.'],
+ ['Cost Cutter','You argue for the cheapest option that still works. Challenge every expense and ask what can be dropped or done later.']
+];
+function addStarter(){STARTER.forEach(([n,t],i)=>{if(!povs.some(v=>v.name===n))povs.push({id:'s'+i+Date.now().toString(36),name:n,text:t})});savePovs()}
+if(povFresh&&!povs.length)addStarter();
+let povSelects=[];
+function fillPovSelect(sel){
+  sel.replaceChildren();
+  const o=el('option','',povs.length?'Load a saved POV…':'No saved POVs yet');o.value='';sel.append(o);
+  povs.forEach(v=>{const x=el('option','',v.name||'Untitled');x.value=v.id;sel.append(x)});
+  sel.value='';
+}
+function renderPovs(openId){
+  const box=$('#povList');box.replaceChildren();
+  $('#povEmpty').hidden=povs.length>0;
+  povs.forEach((v,i)=>{
+    const d=el('details','adv');d.open=openId!==undefined&&v.id===openId;
+    const s=el('summary','',v.name||'New POV');
+    const name=el('input');name.type='text';name.placeholder='Name';name.autocomplete='off';name.value=v.name||'';
+    name.oninput=()=>{v.name=name.value;s.textContent=v.name||'New POV';savePovs();povSelects.forEach(x=>fillPovSelect(x))};
+    const text=el('textarea');text.rows=5;text.value=v.text||'';
+    text.placeholder='The point of view, e.g. “You push for the cheapest option and challenge anything expensive.”';
+    text.oninput=()=>{v.text=text.value;savePovs()};
+    const del=el('button','ghost danger','Delete POV');del.type='button';
+    del.onclick=()=>{if(!confirm('Delete this POV?'))return;povs.splice(i,1);savePovs();renderPovs();povSelects.forEach(x=>fillPovSelect(x))};
+    d.append(s,field('Name',name),field('Point of view',text),del);
+    box.append(d);
+  });
+}
+$('#addPov').onclick=()=>{
+  const v={id:Date.now().toString(36),name:'',text:''};
+  povs.push(v);savePovs();renderPovs(v.id);povSelects.forEach(x=>fillPovSelect(x));
+};
+$('#starter').onclick=()=>{addStarter();renderPovs()};
+const RULES_KEY='council.rules.v1';
+const DEFAULT_RULES='Present logical arguments backed by reasons. Respond directly to the other advisors’ points. Be concise. By the final round, state a clear conclusion and what you recommend.';
+let rules=DEFAULT_RULES;
+try{const r=localStorage.getItem(RULES_KEY);if(r!==null)rules=r}catch(e){}
+const rulesEl=$('#rules');rulesEl.value=rules;
+rulesEl.oninput=()=>{rules=rulesEl.value;try{localStorage.setItem(RULES_KEY,rules)}catch(e){}};
+$('#rulesReset').onclick=()=>{rulesEl.value=DEFAULT_RULES;rulesEl.oninput()};
+$('#add').onclick=()=>{
+  const a={id:Date.now().toString(36),name:'',key:'',role:''};
+  adv.push(a);save();render(a.id);
+};
+$('#clear').onclick=()=>{
+  if(confirm('Remove all advisors, keys, saved POVs, ground rules and saved debates from this browser?')){
+    if(run){run.stopped=true;run=null}view=null;adv=[];pastDebates=[];try{localStorage.removeItem(STORE);localStorage.removeItem(RULES_KEY);localStorage.removeItem(POV_KEY);localStorage.removeItem(HKEY)}catch(e){}povs=[];renderPovs();rules=DEFAULT_RULES;rulesEl.value=DEFAULT_RULES;
+    render();
+  }
+};
+
+/* ---------- Providers ---------- */
+const PROV={
+  google:{label:'Google',model:'gemini-3.5-flash-lite'},
+  anthropic:{label:'Anthropic',model:'claude-haiku-5-5'},
+  openrouter:{label:'OpenRouter',model:'openrouter/auto'},
+  openai:{label:'OpenAI',model:'gpt-4o-mini'}
+};
+function detect(k){
+  k=(k||'').trim();
+  if(k.startsWith('AIza')||k.startsWith('AQ.'))return 'google';
+  if(k.startsWith('sk-ant-'))return 'anthropic';
+  if(k.startsWith('sk-or-'))return 'openrouter';
+  if(k.startsWith('sk-'))return 'openai';
+  return null;
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let run=null,view=null,images=[],allowAfterStop=false;
+const note=t=>{$('#status').textContent=t||''};
+
+async function ask(a,system,user,onChunk,imgs){
+  const pv=detect(a.key)||a.provider;
+  if(!pv)throw new Error('Choose a provider for '+(a.name||'this advisor')+' in Settings.');
+  const key=a.key.trim(),model=(a.model||'').trim()||PROV[pv].model;
+  imgs=imgs||[];
+  let url,body,headers={'Content-Type':'application/json'};
+  if(pv==='google'){
+    url='https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':streamGenerateContent?alt=sse';
+    headers['x-goog-api-key']=key;
+    body={systemInstruction:{parts:[{text:system}]},contents:[{role:'user',parts:[{text:user},...imgs.map(i=>({inlineData:{mimeType:i.mime,data:i.data}}))]}]};
+  }else if(pv==='anthropic'){
+    url='https://api.anthropic.com/v1/messages';
+    headers['x-api-key']=key;headers['anthropic-version']='2023-06-01';headers['anthropic-dangerous-direct-browser-access']='true';
+    body={model,max_tokens:500,stream:true,system,messages:[{role:'user',content:[...imgs.map(i=>({type:'image',source:{type:'base64',media_type:i.mime,data:i.data}})),{type:'text',text:user}]}]};
+  }else{
+    url=pv==='openai'?'https://api.openai.com/v1/chat/completions':'https://openrouter.ai/api/v1/chat/completions';
+    headers.Authorization='Bearer '+key;
+    body={model,stream:true,messages:[{role:'system',content:system},{role:'user',content:[{type:'text',text:user},...imgs.map(i=>({type:'image_url',image_url:{url:'data:'+i.mime+';base64,'+i.data}}))]}]};
+  }
+  for(let t=0;;t++){
+    let r;
+    try{r=await fetch(url,{method:'POST',headers,body:JSON.stringify(body)})}
+    catch(e){throw new Error('Could not reach '+PROV[pv].label+'. Check your connection.')}
+    if(r.ok){
+      const rd=r.body.getReader(),dec=new TextDecoder();
+      let buf='',full='';
+      for(;;){
+        if(run&&run.stopped&&!allowAfterStop){rd.cancel();return full}
+        const {done,value}=await rd.read();
+        if(done)break;
+        buf+=dec.decode(value,{stream:true});
+        const lines=buf.split('\n');buf=lines.pop();
+        for(const ln of lines){
+          if(!ln.startsWith('data:'))continue;
+          const d=ln.slice(5).trim();
+          if(!d||d==='[DONE]')continue;
+          let j;try{j=JSON.parse(d)}catch(e){continue}
+          const piece=pv==='google'?(j.candidates?.[0]?.content?.parts||[]).map(x=>x.text||'').join('')
+            :pv==='anthropic'?(j.type==='content_block_delta'?(j.delta?.text||''):'')
+            :(j.choices?.[0]?.delta?.content||'');
+          if(piece){full+=piece;if(onChunk)onChunk(full)}
+        }
+      }
+      if(!full.trim())throw new Error('The model returned an empty reply.');
+      return full.trim();
+    }
+    if((r.status===429||r.status===503)&&t<3&&!(run&&run.stopped)){
+      note(PROV[pv].label+' is busy. Retrying…');
+      await sleep(2500*(t+1));continue;
+    }
+    let msg='';
+    try{const j=await r.json();msg=j.error?.message||j.error||''}catch(e){}
+    if(typeof msg!=='string')msg=JSON.stringify(msg);
+    throw new Error(r.status===401||r.status===403?PROV[pv].label+' rejected the key ('+r.status+').'
+      :r.status===429?PROV[pv].label+' rate limit reached. Wait a minute, then resume.'
+      :r.status===404?PROV[pv].label+' could not find the model “'+model+'”. Enter a current model name in this advisor’s Model box.'
+      :PROV[pv].label+' error '+r.status+(msg?': '+msg:''));
+  }
+}
+
+/* ---------- Debate ---------- */
+const COLORS=['#d9774f','#d4a640','#7fae78','#cc6073','#b08968'];
+const ready=a=>a.name&&a.key&&a.role;
+const SVGNS='http://www.w3.org/2000/svg';
+const HKEY='council.history.v1';
+let pastDebates=[];
+try{pastDebates=JSON.parse(localStorage.getItem(HKEY))||[]}catch(e){}
+if(!Array.isArray(pastDebates))pastDebates=[];
+const saveHist=()=>{try{localStorage.setItem(HKEY,JSON.stringify(pastDebates.slice(0,30)))}catch(e){}};
+
+/* images */
+async function readImage(f){
+  const bm=await createImageBitmap(f),k=Math.min(1,1280/Math.max(bm.width,bm.height));
+  const c=document.createElement('canvas');c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);
+  const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(bm,0,0,c.width,c.height);
+  const url=c.toDataURL('image/jpeg',.85);
+  return {mime:'image/jpeg',data:url.split(',')[1],url};
+}
+function drawThumbs(){
+  const t=$('#thumbs');t.replaceChildren();
+  images.forEach((im,i)=>{
+    const w=el('span','thumb'),g=el('img'),x=el('button','ghost','Remove');
+    g.src=im.url;g.alt='Attachment '+(i+1);x.type='button';
+    x.onclick=()=>{images.splice(i,1);drawThumbs()};
+    w.append(g,x);t.append(w);
+  });
+}
+$('#imgIn').onchange=async e=>{
+  for(const f of e.target.files){
+    if(images.length>=3)break;
+    try{images.push(await readImage(f))}catch(err){$('#pickMsg').textContent='Could not read that image.'}
+  }
+  e.target.value='';drawThumbs();
+};
+
+/* stage: mascots around a small orb, the speaker lights up and pulses into it */
+const sc=$('#sc'),sx=sc.getContext('2d');
+let sraf=0,speaker=-1,sPos=[],sW=0,sH=0;
+const sR=24,sS=34;
+function stageLayout(){
+  const st=$('#stage'),r=st.getBoundingClientRect();
+  sW=r.width;sH=r.height;
+  if(!sW||!sH||!run)return;
+  const d=Math.min(devicePixelRatio||1,2);
+  sc.width=sW*d;sc.height=sH*d;sx.setTransform(d,0,0,d,0,0);
+  st.querySelectorAll('.sm').forEach(x=>x.remove());
+  const n=run.order.length,rx=Math.min(sW*.4,220),ry=sH/2-sS/2-2;
+  sPos=run.order.map((a,i)=>{
+    const t=(-90+360*i/n)*Math.PI/180,p={x:sW/2+rx*Math.cos(t),y:sH/2+ry*Math.sin(t)};
+    const m=el('div','sm'),sv=document.createElementNS(SVGNS,'svg'),u=document.createElementNS(SVGNS,'use');
+    m.style.left=p.x+'px';m.style.top=p.y+'px';
+    sv.setAttribute('viewBox','0 0 64 64');u.setAttribute('href','#m'+(i%5));sv.append(u);m.append(sv);st.append(m);
+    return p;
+  });
+  paintStage();
+}
+function paintStage(){document.querySelectorAll('#stage .sm').forEach((m,i)=>{m.classList.toggle('on',i===speaker);m.classList.toggle('dim',speaker>=0&&i!==speaker)})}
+function stageDraw(t){
+  sx.clearRect(0,0,sW,sH);
+  const cx=sW/2,cy=sH/2;
+  sPos.forEach((p,i)=>{
+    const dx=cx-p.x,dy=cy-p.y,d=Math.hypot(dx,dy)||1,ux=dx/d,uy=dy/d;
+    const x0=p.x+ux*sS*.6,y0=p.y+uy*sS*.6,x1=cx-ux*sR,y1=cy-uy*sR;
+    sx.strokeStyle='rgba('+ORB+','+(i===speaker?.7:.25)+')';
+    sx.beginPath();sx.moveTo(x0,y0);sx.lineTo(x1,y1);sx.stroke();
+    if(i===speaker&&!reduce){const k=(t/700)%1;sx.fillStyle='rgb('+PULSE+')';sx.beginPath();sx.arc(x0+(x1-x0)*k,y0+(y1-y0)*k,3,0,6.2832);sx.fill()}
+  });
+  const y=reduce?0:t*.0004,cY=Math.cos(y),sY=Math.sin(y);
+  sx.fillStyle='rgb('+ORB+')';
+  for(let i=0;i<MAX;i+=3){
+    const x1=PX[i]*cY+PZ[i]*sY,z1=-PX[i]*sY+PZ[i]*cY;
+    sx.globalAlpha=.2+.8*(z1+1)/2;
+    sx.beginPath();sx.arc(cx+x1*sR,cy+PY[i]*sR,.9,0,6.2832);sx.fill();
+  }
+  sx.globalAlpha=1;
+}
+function startStage(){
+  cancelAnimationFrame(sraf);stageLayout();
+  if(reduce)stageDraw(0);
+  else{const f=t=>{stageDraw(t);sraf=requestAnimationFrame(f)};sraf=requestAnimationFrame(f)}
+}
+function setSpeaker(i){speaker=i;paintStage();if(reduce&&run)stageDraw(0)}
+window.addEventListener('resize',()=>{if(current==='debate'&&run&&!$('#stage').hidden){stageLayout();if(reduce)stageDraw(0)}});
+
+/* room + pastDebates */
+function showRoom(live){
+  $('#setup').hidden=true;$('#room').hidden=false;
+  $('#live').hidden=!live;$('#stage').hidden=!live;
+  if(live)startStage();
+}
+function renderPast(){
+  const box=$('#past');box.replaceChildren();
+  $('#pastH').hidden=!pastDebates.length;
+  pastDebates.forEach((h,i)=>{
+    const row=el('div','hist'),btns=el('div','');
+    const open=el('button','ghost','Open'),del=el('button','ghost danger','Delete');
+    open.type=del.type='button';
+    open.onclick=()=>openHist(h);
+    del.onclick=()=>{if(!confirm('Delete this saved debate?'))return;pastDebates.splice(i,1);saveHist();renderPast()};
+    btns.append(open,del);
+    row.append(el('span','',new Date(h.date).toLocaleDateString()+'  '+h.topic),btns);
+    box.append(row);
+  });
+}
+function openHist(h){
+  view=h;showRoom(false);
+  $('#log').replaceChildren();$('#roomImgs').replaceChildren();$('#roomTopic').textContent=h.topic;note('');
+  h.log.forEach(m=>addMsg(m.name,m.text,m.idx==null?-1:m.idx,m.kind));
+}
+function finish(r){
+  if(!r.log.length)return;
+  if(!r.entry){r.entry={id:Date.now().toString(36),date:Date.now(),topic:r.topic,names:r.order.map(a=>a.name),log:r.log};pastDebates.unshift(r.entry)}
+  saveHist();
+}
+function enterDebate(){
+  if(run){showRoom(true);return}
+  if(view){showRoom(false);return}
+  $('#setup').hidden=false;$('#room').hidden=true;
+  const box=$('#pick');box.replaceChildren();
+  adv.forEach((a,i)=>{
+    const l=el('label','pick'),c=el('input');
+    c.type='checkbox';c.value=i;c.checked=!!ready(a);c.disabled=!ready(a);
+    l.append(c,el('span','',(a.name||'Unnamed advisor')+(ready(a)?'':' (needs a name, key and role)')));
+    box.append(l);
+  });
+  $('#pickMsg').textContent=adv.filter(ready).length<2?'You need at least two advisors with a name, key and role. Add them in Settings.':'';
+  renderPast();
+}
+
+function addMsg(name,text,idx,kind){
+  const m=el('div','msg'+(kind?' '+kind:''));
+  if(idx>=0)m.style.setProperty('--c',COLORS[idx%COLORS.length]);
+  const head=el('div','who'),p=el('p','',text);
+  if(idx>=0){
+    const sv=document.createElementNS(SVGNS,'svg'),u=document.createElementNS(SVGNS,'use');
+    sv.setAttribute('viewBox','0 0 64 64');sv.setAttribute('width','26');sv.setAttribute('height','26');
+    u.setAttribute('href','#m'+(idx%5));sv.append(u);head.append(sv);
+  }
+  head.append(el('b','',name));
+  m.append(head,p);
+  $('#log').append(m);
+  m.scrollIntoView({block:'end',behavior:reduce?'auto':'smooth'});
+  return p;
+}
+
+function setCtl(){
+  const d=!run||run.done;
+  $('#pause').textContent=run&&run.paused?(run.waiting?'Continue':'Resume'):'Pause';
+  $('#pause').disabled=d;$('#stop').disabled=d;$('#sayIn').disabled=d;$('#sayBtn').disabled=d;
+  $('#joint').disabled=!run||!run.log.length||run.busy||!(run.paused||run.done);
+}
+
+const transcript=r=>r.log.filter(m=>m.kind!=='summary').map(m=>m.name+': '+m.text).join('\n\n');
+const sysFor=a=>'You are '+a.name+', one of several advisors debating a topic with the user. Your role and point of view: '+a.role+'\nStay in that role. Respond to specific points other advisors made, by name, and disagree where you see a real flaw. Do not repeat points already made. If the user has jumped in, answer them directly. Plain text, under 120 words.'+(rules.trim()?'\n\nGround rules that apply to every advisor:\n'+rules.trim():'');
+const userFor=(a,r)=>'Topic: '+r.topic+'\n\n'+(r.log.length?'Discussion so far:\n\n'+transcript(r)+'\n\n':'No one has spoken yet.\n\n')+'Your turn, '+a.name+'.';
+
+async function loop(){
+  const r=run,total=r.order.length*r.rounds;
+  while(!r.stopped&&r.turn<total){
+    while(r.paused&&!r.stopped)await sleep(200);
+    if(r.stopped)return;
+    const idx=r.turn%r.order.length,a=r.order[idx];
+    note(a.name+' is thinking…');setSpeaker(idx);
+    let p=null;
+    try{
+      const text=await ask(a,sysFor(a),userFor(a,r),t=>{
+        if(!p)p=addMsg(a.name,t,idx);
+        p.textContent=t;p.parentElement.scrollIntoView({block:'end'});
+      },r.images);
+      if(r.stopped)return;
+      if(!p)p=addMsg(a.name,text,idx);
+      p.textContent=text;
+      r.log.push({name:a.name,text,idx});r.turn++;finish(r);
+    }catch(e){
+      if(p)p.parentElement.remove();
+      if(r.stopped)return;
+      setSpeaker(-1);r.paused=true;setCtl();note(e.message+' Press Resume to retry, or Stop.');
+      continue;
+    }
+    setSpeaker(-1);
+    if(r.step&&r.turn%r.order.length===0){
+      r.paused=true;r.waiting=true;setCtl();
+      note(r.turn>=total?'Final round done. Reply to add a last point, or press Continue for the verdict.':'Round '+(r.turn/r.order.length)+' of '+r.rounds+' done. Reply below to steer them, or press Continue.');
+      $('#sayIn').focus();
+      continue;
+    }
+    note('');
+    await sleep(1200);
+  }
+  while(r.paused&&!r.stopped)await sleep(200);
+  if(r.stopped)return;
+  if(r.votes){
+    const lines=[];
+    for(let i=0;i<r.order.length;i++){
+      const a=r.order[i];
+      note(a.name+' is voting…');setSpeaker(i);
+      try{
+        const t=await ask(a,sysFor(a),'Topic: '+r.topic+'\n\nDiscussion:\n\n'+transcript(r)+'\n\nGive your final verdict now. Reply in exactly this format and nothing else:\nVERDICT: <one sentence>\nCONFIDENCE: <whole number 1-10>',null,r.images);
+        if(r.stopped)return;
+        const v=(t.match(/VERDICT:\s*([\s\S]*?)\s*CONFIDENCE/i)||[])[1]||t,c=(t.match(/CONFIDENCE:\s*(\d+)/i)||[])[1];
+        lines.push(a.name+(c?' ('+c+'/10)':'')+': '+v.trim());
+      }catch(e){if(r.stopped)return;lines.push(a.name+': no vote ('+e.message+')')}
+      await sleep(800);
+    }
+    setSpeaker(-1);
+    const vt=lines.join('\n\n');
+    addMsg('Final votes',vt,-1,'votes');r.log.push({name:'Final votes',text:vt,idx:-1,kind:'votes'});
+  }
+  note('Summarizing…');
+  let sp=null;
+  try{
+    const text=await ask(r.order[0],'You are a neutral moderator. Summarize the debate for someone making a decision: where the advisors agree, where they disagree'+(r.votes?' (use the final votes to show any split)':'')+', and which option the strongest arguments favor. Plain text, under 150 words.','Topic: '+r.topic+'\n\nDiscussion:\n\n'+transcript(r)+'\n\nWrite the summary.',t=>{
+      if(!sp)sp=addMsg('Summary',t,-1,'summary');
+      sp.textContent=t;
+    },r.images);
+    if(!sp)sp=addMsg('Summary',text,-1,'summary');
+    sp.textContent=text;
+    r.log.push({name:'Summary',text,idx:-1,kind:'summary'});
+  }catch(e){if(sp)sp.parentElement.remove();addMsg('Summary',e.message,-1,'summary')}
+  r.done=true;note('');setCtl();finish(r);
+}
+
+async function jointAnswer(){
+  const r=run;
+  if(!r||!r.log.length||r.busy)return;
+  r.busy=true;allowAfterStop=true;setCtl();
+  const a=r.order[(r.jointN||0)%r.order.length];r.jointN=(r.jointN||0)+1;
+  note('Writing the joint answer…');
+  let p=null;
+  try{
+    const text=await ask(a,'You are writing on behalf of all the advisors together: '+r.order.map(x=>x.name).join(', ')+'. Write ONE joint answer in the first person plural ("we"). Weave in each advisor by name with their key point, resolve or clearly state any remaining disagreement, and end with one clear recommendation. Plain text, under 220 words.','Topic: '+r.topic+'\n\nDiscussion:\n\n'+transcript(r)+'\n\nWrite the joint answer.',t=>{
+      if(!p)p=addMsg('Joint answer',t,-1,'joint');
+      p.textContent=t;p.parentElement.scrollIntoView({block:'end'});
+    },r.images);
+    if(!p)p=addMsg('Joint answer',text,-1,'joint');
+    p.textContent=text;
+    r.log.push({name:'Joint answer',text,idx:-1,kind:'joint'});
+    finish(r);
+    note('');
+  }catch(e){if(p)p.parentElement.remove();note(e.message)}
+  r.busy=false;allowAfterStop=false;setCtl();
+}
+$('#joint').onclick=jointAnswer;
+$('#go').onclick=()=>{
+  const topic=$('#topic').value.trim();
+  const order=[...document.querySelectorAll('#pick input:checked')].map(c=>adv[+c.value]);
+  if(!topic){$('#pickMsg').textContent='Enter a topic first.';return}
+  if(order.length<2){$('#pickMsg').textContent='Select at least two advisors.';return}
+  run={topic,order,rounds:+$('#rounds').value,step:$('#stepRounds').checked,votes:$('#voteOn').checked,images:images.slice(),log:[],turn:0,paused:false,waiting:false,stopped:false,done:false};
+  view=null;images=[];drawThumbs();
+  showRoom(true);
+  $('#log').replaceChildren();$('#roomTopic').textContent=topic;note('');
+  const ri=$('#roomImgs');ri.replaceChildren();
+  run.images.forEach(im=>{const g=el('img');g.src=im.url;g.alt='Attached image';ri.append(g)});
+  setCtl();loop();
+};
+$('#pause').onclick=()=>{if(run){run.paused=!run.paused;run.waiting=false;if(!run.paused)note('');setCtl()}};
+$('#stop').onclick=()=>{if(run){run.stopped=true;run.done=true;setSpeaker(-1);note('Stopped.');setCtl();finish(run)}};
+$('#again').onclick=()=>{
+  if(run){run.stopped=true;finish(run)}
+  run=null;view=null;speaker=-1;cancelAnimationFrame(sraf);note('');enterDebate();
+};
+$('#exp').onclick=()=>{
+  const d=run||view;if(!d)return;
+  const md='# '+d.topic+'\n\n'+d.log.map(m=>'**'+m.name+':** '+m.text).join('\n\n')+'\n';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));a.download='senate-debate.md';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+};
+function say(){
+  const t=$('#sayIn').value.trim();
+  if(!t||!run||run.done)return;
+  run.log.push({name:'You',text:t,idx:-1,kind:'you'});addMsg('You',t,-1,'you');$('#sayIn').value='';finish(run);
+  if(run.waiting){run.waiting=false;run.paused=false;note('');setCtl()}
+}
+$('#sayBtn').onclick=say;
+window.addEventListener('beforeunload',e=>{if(run&&!run.done){e.preventDefault();e.returnValue=''}});
+$('#sayIn').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();say()}};
+
+const root=document.documentElement,tbtn=$('#theme');
+function setTheme(t,persist){
+  root.dataset.theme=t;
+  tbtn.setAttribute('aria-label',t==='dark'?'Switch to light theme':'Switch to dark theme');
+  colors();
+  if(reduce&&current==='home')draw(0);
+  if(persist){try{localStorage.setItem('council.theme',t)}catch(e){}}
+}
+tbtn.onclick=()=>setTheme(root.dataset.theme==='dark'?'light':'dark',true);
+setTheme(root.dataset.theme||'dark',false);
+
+renderPovs();
+render();
+show('home');
+</script>
+</body>
+</html>
